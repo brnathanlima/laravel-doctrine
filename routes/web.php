@@ -36,3 +36,32 @@ Route::get('/find', function(EntityManagerInterface $em){
 
 Route::resource('tasks', 'TasksController');
 Route::get('/tasks/{task}/toggle', 'TasksController@toggleStatus');
+
+Route::group(['middleware' => ['web']], function() {
+    Route::get('test-user', function(\Doctrine\ORM\EntityManagerInterface $em) {
+        $user = new \App\Entities\User('Nathan', 'nathan@domi.nio');
+        $user->setPassword(bcrypt('123456'));
+
+        $em->persist($user);
+        $em->flush();
+    });
+
+    Route::get('/login', function() {
+        return view('login');
+    });
+
+    Route::post('/login', function() {
+        if (\Auth::attempt(['email' => request('email'), 'password' => request('password')])) {
+            return redirect('/');
+        }
+    });
+
+    Route::get('logout', function() {
+        \Auth::logout();
+        return redirect('login');
+    });
+
+    Route::group(['middleware' => ['auth']], function() {
+        Route::get('/', 'TasksController@index');
+    });
+});

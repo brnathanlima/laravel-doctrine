@@ -15,7 +15,10 @@ class TasksController extends Controller
      */
     public function index(EntityManagerInterface $em)
     {
-        $tasks = $em->getRepository(Task::class)->findAll();
+        $user = \Auth::user();
+
+        // $tasks = $em->getRepository(Task::class)->findAll();
+        $tasks = $user->getTasks();
 
         return view('index', compact('tasks'));
     }
@@ -42,6 +45,8 @@ class TasksController extends Controller
             request('name'),
             request('description')
         );
+
+        $task->setUser(\Auth::user());
 
         $em->persist($task);
         $em->flush();
